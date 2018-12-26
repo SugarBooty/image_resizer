@@ -3,17 +3,19 @@ from tkinter import filedialog
 from tkinter import ttk
 from PIL import Image
 import glob
+import os
 
 # is called from resize button
 def Resize(path):
+    print("Got to resize")
     FILTER = Filter.get()
     DIM_X = Dim_X.get()
     DIM_Y = Dim_Y.get()
-    SIZE = [tuple(DIM_X), tuple(DIM_Y)]
+    SIZE = [int(DIM_X), int(DIM_Y)]
     DESTINATION_DIR = Destination_Path.get()
     Resize_Type = Mode.get()
 
-    print(FILTER, SIZE, DESTINATION_DIR)
+    print('FILTER = ', FILTER, 'SIZE = ', SIZE, 'DESTINATION = ', DESTINATION_DIR)
 
 # Uses resize, which stretches the picture to fit the new dimensions
     if Resize_Type == "Stretch":
@@ -37,12 +39,14 @@ def SourceButtonDef():
     global Source_Path
     Filename = filedialog.askdirectory()
     Source_Path.set(Filename)
+    print(Source_Path.get())
 
 # Opens a file browser to pick the destination dir
 def DestinationPathDef():
     global Destination_Path
     Filename = filedialog.askdirectory()
     Destination_Path.set(Filename)
+    print(Destination_Path.get())
 
 # Closes the window and quits the program
 def CloseWindow():
@@ -58,19 +62,20 @@ count = 0
 
 def Popup():
     global Progress_Bar
+    SOURCE_DIR = Source_Path.get()
     Progress_Window = Toplevel()
     Progress_Window.title("Resizing...")
 
     Progress_Bar = ttk.Progressbar(Progress_Window, orient="horizontal", length=300, mode="determinate")
     Progress_Bar.grid(row=0, column=0)
 
-    
+    TOTAL_FILES = len(glob.glob(SOURCE_DIR + '/*.*'))
 
-    TOTAL_FILES = 30
     Progress_Bar['maximum'] = TOTAL_FILES
 
     Button(Progress_Window, text="+1", width=14, command=test).grid(row=1, column=0)
 
+# Function to update the progress bar
 def Progress_Update(Current_Value):
     global Progress_Bar
     Progress_Bar['value'] = Current_Value
@@ -80,16 +85,18 @@ def test():
     count = count + 1
     Progress_Update(count)
 
-
+# Initializes the resizing part
 def Initialize():
     global count
     Popup()
-    DESTINATION_DIR = Destination_Path.get()
-    TOTAL_FILES = len(glob.glob(DESTINATION_DIR + '/*.*'))
+    SOURCE_DIR = Source_Path.get()
+    TOTAL_FILES = len(glob.glob(SOURCE_DIR + '/*.*'))
 
-    print(TOTAL_FILES)
 
-    for filepath in glob.iglob(DESTINATION_DIR + '/*.*'):
+    print(TOTAL_FILES, ' ', glob.iglob(SOURCE_DIR + '/*.*'), ' ', SOURCE_DIR)
+
+    for filepath in glob.iglob(SOURCE_DIR + '/*.*'):
+        print(filepath)
         count = count + 1
         Progress_Update(count)
         Resize(filepath)
@@ -107,7 +114,7 @@ Source_Path = StringVar()
 Destination_Path = StringVar()
 Dim_X = IntVar()
 Dim_Y = IntVar()
-Mode = IntVar()
+Mode = StringVar()
 Filter = StringVar()
 
 # Source Row -- Row 0
