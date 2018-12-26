@@ -2,14 +2,14 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
 from PIL import Image
-
+import glob
 
 # is called from resize button
 def Resize(path):
     FILTER = Filter.get()
     DIM_X = Dim_X.get()
     DIM_Y = Dim_Y.get()
-    SIZE = tuple(DIM_X, DIM_Y)
+    SIZE = [tuple(DIM_X), tuple(DIM_Y)]
     DESTINATION_DIR = Destination_Path.get()
     Resize_Type = Mode.get()
 
@@ -37,7 +37,6 @@ def SourceButtonDef():
     global Source_Path
     Filename = filedialog.askdirectory()
     Source_Path.set(Filename)
-    Source.set(Filename)
 
 # Opens a file browser to pick the destination dir
 def DestinationPathDef():
@@ -49,6 +48,55 @@ def DestinationPathDef():
 def CloseWindow():
     Window.destroy()
     exit()
+
+
+
+
+count = 0
+
+
+
+def Popup():
+    global Progress_Bar
+    Progress_Window = Toplevel()
+    Progress_Window.title("Resizing...")
+
+    Progress_Bar = ttk.Progressbar(Progress_Window, orient="horizontal", length=300, mode="determinate")
+    Progress_Bar.grid(row=0, column=0)
+
+    
+
+    TOTAL_FILES = 30
+    Progress_Bar['maximum'] = TOTAL_FILES
+
+    Button(Progress_Window, text="+1", width=14, command=test).grid(row=1, column=0)
+
+def Progress_Update(Current_Value):
+    global Progress_Bar
+    Progress_Bar['value'] = Current_Value
+
+def test():
+    global count
+    count = count + 1
+    Progress_Update(count)
+
+
+def Initialize():
+    global count
+    Popup()
+    DESTINATION_DIR = Destination_Path.get()
+    TOTAL_FILES = len(glob.glob(DESTINATION_DIR + '/*.*'))
+
+    print(TOTAL_FILES)
+
+    for filepath in glob.iglob(DESTINATION_DIR + '/*.*'):
+        count = count + 1
+        Progress_Update(count)
+        Resize(filepath)
+
+
+
+
 
 # Initializes the window and gives it a title
 Window = Tk()
@@ -64,7 +112,7 @@ Filter = StringVar()
 
 # Source Row -- Row 0
 Label(Window, text="Source:").grid(row=0, column=0)
-Source = Entry(Window, width=30, bg="White")
+Source = Label(Window,textvariable=Source_Path, width=30, bg="White")
 Source.grid(row=0, column=1)
 Button(Window, text="Browse", width=6, command=SourceButtonDef).grid(row=0, column=2)
 
@@ -117,7 +165,12 @@ Dropdown['values'] = ('NEAREST', 'BILINEAR', 'BICUBIC', 'LANCZOS')
 
 # Quit and Resize Buttons
 Button(Close_Frame, text="Quit", width=14, command=CloseWindow).grid(row=0, column=0)
-Button(Close_Frame, text="Resize", width=14, command=Run).grid(row=0, column=1)
+Button(Close_Frame, text="Resize", width=14, command=Initialize).grid(row=0, column=1)
+
+
+
+
+
 
 # Runs the Window
 Window.mainloop()
